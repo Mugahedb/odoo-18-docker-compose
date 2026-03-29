@@ -1,6 +1,6 @@
 version: '2'
 services:
-  db:
+  db-prod:
     image: postgres:17
     user: root
     environment:
@@ -10,19 +10,18 @@ services:
     restart: always             # run as a service
     volumes:
         - ./postgresql:/var/lib/postgresql/data
+    networks:
+      - odoo-network  # Attach db-prod to the custom network
 
-  odoo18:
+  odoo18-prod:
     image: odoo:18
     user: root
     depends_on:
-      - db
-    ports:
-      - "10018:8069"
-      - "20018:8072" # live chat
+      - db-prod
     tty: true
     command: --
     environment:
-      - HOST=db
+      - HOST=db-prod
       - USER=odoo
       - PASSWORD=odoo18@2024
       - PIP_BREAK_SYSTEM_PACKAGES=1
@@ -33,4 +32,9 @@ services:
       - ./addons:/mnt/extra-addons
       - ./etc:/etc/odoo
     restart: always             # run as a service
-    
+    networks:
+      - odoo-network  # Attach odoo18-prod to the custom network
+
+networks:
+  odoo-network:
+    driver: bridge
