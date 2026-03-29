@@ -2,6 +2,7 @@
 DESTINATION=$1
 PORT=$2
 CHAT=$3
+ENVIRONMENT=$4  # New parameter to specify prod or test
 
 # Clone Odoo directory
 git clone --depth=1 https://github.com/minhng92/odoo-18-docker-compose $DESTINATION
@@ -39,6 +40,43 @@ else
   sed -i 's/20018/'$CHAT'/g' $DESTINATION/docker-compose.yml
 fi
 
+# Modify service names dynamically based on the environment (prod or test)
+if [[ "$ENVIRONMENT" == "prod" ]]; then
+  # Replace db: to db-prod: and odoo17: to odoo17-prod:
+  sed -i 's/^  db:$/  db-prod:/g' $DESTINATION/docker-compose.yml
+  sed -i 's/^  odoo18:/  odoo18-prod:/g' $DESTINATION/docker-compose.yml
+
+  # Modify the depends_on value to point to db-prod
+  sed -i '/depends_on:/,/\]/s/\s*db\s*/  db-prod/g' $DESTINATION/docker-compose.yml
+
+  # Update the HOST variable inside the odoo container to use db-prod
+  sed -i 's/HOST=db/HOST=db-prod/g' $DESTINATION/docker-compose.yml
+
+elif [[ "$ENVIRONMENT" == "test" ]]; then
+  # Replace db: to db-test: and odoo18: to odoo18-test:
+  sed -i 's/^  db:$/  db-test:/g' $DESTINATION/docker-compose.yml
+  sed -i 's/^  odoo18:/  odoo18-test:/g' $DESTINATION/docker-compose.yml
+
+  # Modify the depends_on value to point to db-test
+  sed -i '/depends_on:/,/\]/s/\s*db\s*/  db-test/g' $DESTINATION/docker-compose.yml
+
+  # Update the HOST variable inside the odoo container to use db-test
+  sed -i 's/HOST=db/HOST=db-test/g' $DESTINATION/docker-compose.yml
+
+else
+  echo "Invalid environment. Please specify 'prod' or 'test'."
+  exit 1
+fi
+
+# Add a custom network for communication between containers
+echo "networks:" >> $DESTINATION/docker-compose.yml
+echo "  odoo-network:" >> $DESTINATION/docker-compose.yml
+echo "    driver: bridge" >> $DESTINATION/docker-compose.yml
+
+# Attach each service to the custom network
+sed -i '/services:/a\
+  networks:\n    - odoo-network' $DESTINATION/docker-compose.yml
+
 # Set file and directory permissions after installation
 find $DESTINATION -type f -exec chmod 644 {} \;
 find $DESTINATION -type d -exec chmod 755 {} \;
@@ -51,6 +89,5 @@ if ! is_present="$(type -p "docker-compose")" || [[ -z $is_present ]]; then
 else
   docker-compose -f $DESTINATION/docker-compose.yml up -d
 fi
-
 
 echo "Odoo started at http://localhost:$PORT | Master Password: minhng.info | Live chat port: $CHAT"
