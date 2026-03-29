@@ -34,7 +34,3 @@ services:
     restart: always             # run as a service
     networks:
       - odoo-network  # Attach odoo18-prod to the custom network
-
-networks:
-  odoo-network:
-    driver: bridge
