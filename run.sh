@@ -5,7 +5,7 @@ CHAT=$3
 ENVIRONMENT=$4  # New parameter to specify prod or test
 
 # Clone Odoo directory
-git clone --depth=1 https://github.com/Mugahedb/odoo-18-docker-compose $DESTINATION
+git clone --depth=1 https://github.com/minhng92/odoo-18-docker-compose $DESTINATION
 rm -rf $DESTINATION/.git
 
 # Create PostgreSQL directory
@@ -68,14 +68,17 @@ else
   exit 1
 fi
 
-# Add a custom network for communication between containers
-echo "networks:" >> $DESTINATION/docker-compose.yml
-echo "  odoo-network:" >> $DESTINATION/docker-compose.yml
-echo "    driver: bridge" >> $DESTINATION/docker-compose.yml
+# Check if the networks section already exists, if not, add it
+if ! grep -q "networks:" $DESTINATION/docker-compose.yml; then
+  # Add a custom network for communication between containers
+  echo "networks:" >> $DESTINATION/docker-compose.yml
+  echo "  odoo-network:" >> $DESTINATION/docker-compose.yml
+  echo "    driver: bridge" >> $DESTINATION/docker-compose.yml
 
-# Attach each service to the custom network
-sed -i '/services:/a\
-  networks:\n    - odoo-network' $DESTINATION/docker-compose.yml
+  # Attach each service to the custom network
+  sed -i '/services:/a\
+    networks:\n      - odoo-network' $DESTINATION/docker-compose.yml
+fi
 
 # Set file and directory permissions after installation
 find $DESTINATION -type f -exec chmod 644 {} \;
