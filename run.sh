@@ -47,7 +47,7 @@ if [[ "$ENVIRONMENT" == "prod" ]]; then
   sed -i 's/^  odoo18:/  odoo18-prod:/g' $DESTINATION/docker-compose.yml
 
   # Modify the depends_on value to point to db-prod (no extra prod)
-  sed -i '/depends_on:/,/\]/s/\s*db-prod-prod\s*/  db-prod/g' $DESTINATION/docker-compose.yml
+  sed -i 's/\(depends_on:\s*\[\s*\)\s*db\s*\]/\1  db-prod ]/g' $DESTINATION/docker-compose.yml
 
   # Update the HOST variable inside the odoo container to use db-prod
   sed -i 's/HOST=db-prod-prod/HOST=db-prod/g' $DESTINATION/docker-compose.yml
@@ -58,7 +58,7 @@ elif [[ "$ENVIRONMENT" == "test" ]]; then
   sed -i 's/^  odoo18:/  odoo18-test:/g' $DESTINATION/docker-compose.yml
 
   # Modify the depends_on value to point to db-test
-  sed -i '/depends_on:/,/\]/s/\s*db-test-test\s*/  db-test/g' $DESTINATION/docker-compose.yml
+  sed -i 's/\(depends_on:\s*\[\s*\)\s*db\s*\]/\1  db-test ]/g' $DESTINATION/docker-compose.yml
 
   # Update the HOST variable inside the odoo container to use db-test
   sed -i 's/HOST=db-test-test/HOST=db-test/g' $DESTINATION/docker-compose.yml
