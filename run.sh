@@ -42,23 +42,23 @@ fi
 
 # Modify service names dynamically based on the environment (prod or test)
 if [[ "$ENVIRONMENT" == "prod" ]]; then
-  # Replace db: to db-prod: and odoo18: to odoo18-prod:
+  # Shorten the container name to odoo-prod and db-prod
   sed -i 's/^  db:$/  db-prod:/g' $DESTINATION/docker-compose.yml
-  sed -i 's/^  odoo18:/  odoo18-prod:/g' $DESTINATION/docker-compose.yml
+  sed -i 's/^  odoo18:/  odoo-prod:/g' $DESTINATION/docker-compose.yml
 
-  # Modify the depends_on value to point to db-prod (no extra prod)
-  sed -i 's/\(depends_on:\s*\[\s*\)\s*db\s*\]/\1  db-prod ]/g' $DESTINATION/docker-compose.yml
+  # Modify the depends_on value to point to db-prod
+  sed -i '/depends_on:/,/\]/s/\s*db-prod-prod\s*/  db-prod/g' $DESTINATION/docker-compose.yml
 
   # Update the HOST variable inside the odoo container to use db-prod
   sed -i 's/HOST=db-prod-prod/HOST=db-prod/g' $DESTINATION/docker-compose.yml
 
 elif [[ "$ENVIRONMENT" == "test" ]]; then
-  # Replace db: to db-test: and odoo18: to odoo18-test:
+  # Shorten the container name to odoo-test and db-test
   sed -i 's/^  db:$/  db-test:/g' $DESTINATION/docker-compose.yml
-  sed -i 's/^  odoo18:/  odoo18-test:/g' $DESTINATION/docker-compose.yml
+  sed -i 's/^  odoo18:/  odoo-test:/g' $DESTINATION/docker-compose.yml
 
   # Modify the depends_on value to point to db-test
-  sed -i 's/\(depends_on:\s*\[\s*\)\s*db\s*\]/\1  db-test ]/g' $DESTINATION/docker-compose.yml
+  sed -i '/depends_on:/,/\]/s/\s*db-test-test\s*/  db-test/g' $DESTINATION/docker-compose.yml
 
   # Update the HOST variable inside the odoo container to use db-test
   sed -i 's/HOST=db-test-test/HOST=db-test/g' $DESTINATION/docker-compose.yml
