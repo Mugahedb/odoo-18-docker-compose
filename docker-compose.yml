@@ -11,13 +11,16 @@ services:
     volumes:
         - ./postgresql:/var/lib/postgresql/data
     networks:
-      - odoo-network  # Attach db-prod to the custom network
+      - odoo-internal-network  # Attach db-prod to the custom network
 
   odoo18-prod:
     image: odoo:18
     user: root
     depends_on:
       - db-prod
+    ports:
+      - "10018:8069"
+      - "20018:8072" # live chat
     tty: true
     command: --
     environment:
@@ -33,10 +36,9 @@ services:
       - ./etc:/etc/odoo
     restart: always             # run as a service
     networks:
-      - odoo-network  # Attach odoo-prod to the custom network
+      - odoo-internal-network  # Attach odoo-prod to the custom network
 
 networks:
-  odoo-network:
-    driver: bridge  # Define odoo-network explicitly as a bridge network
-    name: odoo-network  # Ensure Docker uses this network name explicitly
-    external: true
+  odoo-internal-network:
+    name: odoo-internal-network  # Ensure Docker uses this network name explicitly
+    internal: true
