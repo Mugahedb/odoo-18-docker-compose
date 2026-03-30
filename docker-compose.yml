@@ -39,3 +39,4 @@ networks:
   odoo-network:
     driver: bridge  # Define odoo-network explicitly as a bridge network
     name: odoo-network  # Ensure Docker uses this network name explicitly
+    external: true
